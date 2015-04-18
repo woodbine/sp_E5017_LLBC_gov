@@ -26,7 +26,7 @@ links = soup.findAll('a',href=True)
 
 for link in links:
 	url = link['href']
-	if '.csv' in url and 'lambeth' not in url:
+	if '.csv' in url and 'lambeth' not in url: # filter out the last csv, which is the latest published file.
 		url = 'http://www.lambeth.gov.uk'+url
 		title = link.contents[0]
 		# create the right strings for the new filename
