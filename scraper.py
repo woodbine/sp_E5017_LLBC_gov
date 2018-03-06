@@ -11,7 +11,8 @@ from bs4 import BeautifulSoup
 
 
 
-#### FUNCTIONS 1.0
+#### FUNCTIONS 1.1
+import requests
 
 def validateFilename(filename):
     filenameregex = '^[a-zA-Z0-9]+_[a-zA-Z0-9]+_[a-zA-Z0-9]+_[0-9][0-9][0-9][0-9]_[0-9QY][0-9]$'
@@ -87,31 +88,32 @@ def convert_mth_strings ( mth_string ):
 #### VARIABLES 1.0
 
 entity_id = "E5017_LLBC_gov"
-url = "http://www.lambeth.gov.uk/elections-and-council/finance-and-payments/financial-information-guide#expenditure-over-£500"
+url = "https://www.lambeth.gov.uk/elections-and-council/transparency-and-open-data/financial-information-guide"
 errors = 0
 data = []
 
 
 #### READ HTML 1.0
-
-html = urllib2.urlopen(url)
-soup = BeautifulSoup(html, 'lxml')
+html = requests.get(url)
+soup = BeautifulSoup(html.text, 'lxml')
 
 #### SCRAPE DATA
 
-links = soup.find('h3', text=re.compile('2015')).find_all_next('ul')
-
+links = soup.find('h2', text=re.compile("Expenditure over")).find_next('div').find_all('ul')
 for link in links:
     urls = link.find_all('a')
     for url in urls:
-        if '.csv' in url['href']:
+        if '.csv' in url['href'] or '.xlsx' in url['href'] or '.xls' in url['href']:
             title = url.contents[0]
-            url = 'http://www.lambeth.gov.uk'+url['href']
+            url_2 = 'http://www.lambeth.gov.uk'+url['href']
             csvYr = title.split(' ')[1]
             csvMth = title.split(' ')[0][:3]
+            if title.startswith('Q'):
+                csvMth = title.split(' -')[0][:3]
+                csvYr = url['href'].split('-')[-2]
             csvMth = convert_mth_strings(csvMth.upper())
             todays_date = str(datetime.now())
-            data.append([csvYr, csvMth, url])
+            data.append([csvYr, csvMth, url_2])
 
 
 #### STORE DATA 1.0
